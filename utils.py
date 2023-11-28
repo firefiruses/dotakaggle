@@ -2,14 +2,17 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
-def preprocess_train(_data, is_remove_outliers):
+random_seed = 42
+def preprocess_train(_data, is_remove_outliers, is_split = True):
     data = _data.copy()
     data = data.drop("match_id", axis = 1)
     if is_remove_outliers:
         data = delete_outliers(data)
     data = inner_preprocess(data)
-    return split_train(data)
+    if is_split:
+        return split_train(data)
+    else:
+        return data
 
 def preprocess_for_result(_data):
      data = _data.copy()
@@ -18,7 +21,8 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data):
     data = _data.copy()
-    data = delete_not_gold(data)
+    data = delete_not_x_y(data)
+    print('x')
     data = data.dropna()
     return data
 
@@ -27,6 +31,14 @@ def delete_not_gold(_data : pd.DataFrame):
     for cat in data.columns:
         if cat != "target":
             if not "gold" in cat:
+                data = data.drop(cat, axis = 1)
+    return data
+
+def delete_not_x_y(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+            if not "_x" in cat and not "_y" in cat or "xp" in cat:
                 data = data.drop(cat, axis = 1)
     return data
 
