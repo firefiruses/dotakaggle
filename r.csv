@@ -1,0 +1,6 @@
+,objectives
+0,"[{'time': 2.701, 'type': 'CHAT_MESSAGE_FIRSTBLOOD', 'slot': 6, 'key': 2, 'player_slot': 129}, {'time': 579.685, 'type': 'CHAT_MESSAGE_TOWER_KILL', 'team': 2, 'slot': 4, 'player_slot': 4}, {'time': 652.601, 'type': 'CHAT_MESSAGE_TOWER_KILL', 'team': 2, 'slot': -1}]"
+1,[]
+2,"[{'time': 154.262, 'type': 'CHAT_MESSAGE_FIRSTBLOOD', 'slot': 2, 'key': 6, 'player_slot': 2}]"
+3,"[{'time': -10.997, 'type': 'CHAT_MESSAGE_FIRSTBLOOD', 'slot': 1, 'key': 9, 'player_slot': 1}]"
+4,[]

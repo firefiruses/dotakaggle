@@ -21,8 +21,8 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data):
     data = _data.copy()
-    data = delete_not_x_y(data)
-    print('x')
+    #data = delete_not_x_y(data)
+    #print('x')
     data = data.dropna()
     return data
 
@@ -57,8 +57,10 @@ def delete_outliers(_data):
     data = data.where(data["game_time"] < 10000000)
     return data
 
-def write(model):
-    writeData = pd.read_csv("DOTA2_TEST_features.csv")
+def write(model, read_from = "DOTA2_TEST_features.csv", drop_index = False):
+    writeData = pd.read_csv(read_from)
+    if drop_index:
+        writeData = writeData.drop("Unnamed: 0", axis = 1)
     ids = writeData["match_id"]
     writeData = writeData.drop("match_id", axis = 1)
     writeData = preprocess_for_result(writeData)
