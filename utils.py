@@ -25,7 +25,7 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data):
     data = _data.copy()
-    #data = delete_not_x_y(data)
+    data = delete_not_x_y(data)
     #print('x')
     data = data.dropna()
     return data
