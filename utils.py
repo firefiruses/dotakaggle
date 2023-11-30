@@ -8,7 +8,8 @@ import wandb
 import torch
 random_seed = 42
 
-not_delete_in_heroes = ['_x', '_y', '_level']
+not_delete_in_heroes = ['_x', '_y', '_level', '_gold', '_towers_killed', '_roshans_killed']
+not_delete_in_other = ['game_time', 'game_mode', 'lobby_type']
 
 def preprocess_train(_data, is_remove_outliers, is_split = True):
     data = _data.copy()
@@ -28,9 +29,24 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = delete_not_x_y(data)
+    #data = delete_by_list(data)
     #print('x')
     data = data.dropna()
+    return data
+
+def delete_by_list(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+            finded = False
+            for str in not_delete_in_heroes:
+                if str in cat:
+                    finded = True
+            for str in not_delete_in_other:
+                if str in cat:
+                    finded = True
+            if not finded:
+                data = data.drop(cat, axis = 1)
     return data
 
 def delete_all(_data : pd.DataFrame):
