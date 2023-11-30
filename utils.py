@@ -7,6 +7,9 @@ import torch.nn as nn
 import wandb
 import torch
 random_seed = 42
+
+not_delete_in_heroes = ['_x', '_y', '_level']
+
 def preprocess_train(_data, is_remove_outliers, is_split = True):
     data = _data.copy()
     data = data.drop("match_id", axis = 1)
@@ -23,13 +26,21 @@ def preprocess_for_result(_data):
      data = inner_preprocess(data)
      return data
 
-def inner_preprocess(_data):
+def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = delete_not_x_y(data)
+    data = delete_all(data)
+    for side in ['r', 'd']:
+        
     #print('x')
     data = data.dropna()
     return data
 
+def delete_all(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+                data = data.drop(cat, axis = 1)
+    return data
 def delete_not_gold(_data : pd.DataFrame):
     data = _data.copy()
     for cat in data.columns:
@@ -38,6 +49,15 @@ def delete_not_gold(_data : pd.DataFrame):
                 data = data.drop(cat, axis = 1)
     return data
 
+def delete_not_id(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+            if not "id" in cat:
+                data = data.drop(cat, axis = 1)
+    return data
+
+
 def delete_not_x_y(_data : pd.DataFrame):
     data = _data.copy()
     for cat in data.columns:
@@ -45,6 +65,16 @@ def delete_not_x_y(_data : pd.DataFrame):
             if not "_x" in cat and not "_y" in cat or "xp" in cat:
                 data = data.drop(cat, axis = 1)
     return data
+
+def delete_not_r(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+            side = 'r'
+            if not 'r' in cat:
+                data = data.drop(cat, axis = 1)
+    return data
+
 
 def split_train(_data):
     raw_train, raw_test = train_test_split(_data, test_size=0.2, random_state=random_seed)
