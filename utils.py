@@ -28,9 +28,6 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = delete_all(data)
-    for side in ['r', 'd']:
-        
     #print('x')
     data = data.dropna()
     return data
