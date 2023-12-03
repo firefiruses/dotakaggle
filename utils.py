@@ -118,6 +118,8 @@ def write(model, read_from = "DOTA2_TEST_features.csv", drop_index = False):
     writeData = writeData.drop("match_id", axis = 1)
     writeData = preprocess_for_result(writeData)
     resultWriteData = model.predict(writeData)
+    resultWriteData = resultWriteData.T[0]
+    print(resultWriteData)
     resultWriteData = pd.DataFrame({"match_id" : ids, "radiant_win" : resultWriteData})
     resultWriteData.to_csv("result.csv", index= False)
 
