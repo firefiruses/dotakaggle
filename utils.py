@@ -11,28 +11,16 @@ random_seed = 42
 not_delete_in_heroes = ['_x', '_y', '_level', '_gold', '_towers_killed', '_roshans_killed']
 not_delete_in_other = ['game_time', 'game_mode', 'lobby_type']
 
-def preprocess_train(_data, is_remove_outliers, is_split = True):
+def preprocess_train(_data, is_remove_outliers, is_split = True, make_opposite_target = False):
     data = _data.copy()
     data = data.drop("match_id", axis = 1)
     if is_remove_outliers:
         data = delete_outliers(data)
     data = inner_preprocess(data)
     if is_split:
-        return split_train(data)
+        return split_train(data, make_opposite_target)
     else:
         return data
-
-def preprocess_for_result(_data):
-     data = _data.copy()
-     data = inner_preprocess(data)
-     return data
-
-def inner_preprocess(_data : pd.DataFrame):
-    data = _data.copy()
-    #data = delete_by_list(data)
-    #print('x')
-    data = data.dropna()
-    return data
 
 def delete_by_list(_data : pd.DataFrame):
     data = _data.copy()
@@ -47,6 +35,19 @@ def delete_by_list(_data : pd.DataFrame):
                     finded = True
             if not finded:
                 data = data.drop(cat, axis = 1)
+    return data
+
+def preprocess_for_result(_data):
+     data = _data.copy()
+     data = inner_preprocess(data)
+     return data
+
+def inner_preprocess(_data : pd.DataFrame):
+    data = _data.copy()
+    #data = delete_not_x_y(data)
+    #data = delete_not_r(data)
+    #print('x')
+    data = data.dropna()
     return data
 
 def delete_all(_data : pd.DataFrame):
@@ -90,7 +91,7 @@ def delete_not_r(_data : pd.DataFrame):
     return data
 
 
-def split_train(_data):
+def split_train(_data, make_opposite_for_targets = False):
     raw_train, raw_test = train_test_split(_data, test_size=0.2, random_state=random_seed)
     Y_train = pd.DataFrame(raw_train['target'])
     X_train = raw_train.drop('target', axis = 1)
@@ -98,7 +99,11 @@ def split_train(_data):
     X_test = raw_test.drop('target', axis = 1)
     Y_train["target"] = Y_train['target'].astype(int)
     Y_test["target"] = Y_test['target'].astype(int)
-    return X_train,Y_train, X_test, Y_test
+    if make_opposite_for_targets:
+        Y_train["targetOpposite"] = Y_train["target"].apply(lambda x : 1 if x == 0 else 0)
+        #Y_test["targetOpposite"] = Y_test["target"].apply(lambda x : 1 if x == 0 else 0)
+    return X_train, Y_train, X_test, Y_test
+
 
 def delete_outliers(_data):
     data = _data.copy()
@@ -116,7 +121,7 @@ def write(model, read_from = "DOTA2_TEST_features.csv", drop_index = False):
     resultWriteData = pd.DataFrame({"match_id" : ids, "radiant_win" : resultWriteData})
     resultWriteData.to_csv("result.csv", index= False)
 
-def writeNN(net, read_from = "DOTA2_TEST_features.csv", drop_index = False):
+def writeNN(net, read_from = "DOTA2_TEST_features.csv", drop_index = False, is_many_vals = False):
     writeData = pd.read_csv(read_from)
     if drop_index:
         writeData = writeData.drop("Unnamed: 0", axis = 1)
@@ -124,12 +129,8 @@ def writeNN(net, read_from = "DOTA2_TEST_features.csv", drop_index = False):
     writeData = writeData.drop("match_id", axis = 1)
     writeData = preprocess_for_result(writeData)
     dataloader = torch.utils.data.DataLoader(torch.FloatTensor(writeData.values), batch_size=8, shuffle=True,)
-    test_preds = np.array([])
-    for x_batch in dataloader:
-        predictions = net(x_batch)
-        predictions = torch.transpose(predictions, 0, 1)[0]
-        predictions = predictions.detach().numpy()
-        test_preds = np.append(test_preds, predictions)
+    test_preds = pred_by_nn(net, dataloader, is_many_vals)
+    
     resultWriteData = pd.DataFrame({"match_id" : ids, "radiant_win" : test_preds})
     resultWriteData.to_csv("result.csv", index= False)
 
@@ -148,3 +149,35 @@ class MyTensorDataset(torch.utils.data.Dataset):
         
     def __getitem__(self, idx):
         return [t[idx] for t in self.data]
+    
+def test_by_nn(nn,loader, is_many_vals = False):
+    test_preds = np.array([])
+
+    if is_many_vals:
+        for x_batch, y in loader:
+            predictions = nn(x_batch)
+            test_preds = np.append(test_preds, predictions.argmax(dim=-1).numpy())
+    else:
+        for x_batch, y in loader:
+            predictions = nn(x_batch)
+            print(predictions)
+            predictions = torch.transpose(predictions, 0, 1)[0]
+            predictions = predictions.detach().numpy()
+            test_preds = np.append(test_preds, predictions)
+    return test_preds
+
+def pred_by_nn(nn,loader, is_many_vals = False):
+    test_preds = np.array([])
+
+    if is_many_vals:
+        for x_batch in loader:
+            predictions = nn(x_batch)
+            test_preds = np.append(test_preds, predictions.argmax(dim=-1).numpy())
+    else:
+        for x_batch in loader:
+            predictions = nn(x_batch)
+            print(predictions)
+            predictions = torch.transpose(predictions, 0, 1)[0]
+            predictions = predictions.detach().numpy()
+            test_preds = np.append(test_preds, predictions)
+    return test_preds
