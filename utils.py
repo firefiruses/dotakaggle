@@ -66,7 +66,7 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = (delete_by_list(data))
+    data = categorize(delete_by_list(data))
     #data = delete_not_x_y(data)
     #data = delete_not_r(data)
     #print('x')
