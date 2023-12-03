@@ -10,6 +10,8 @@ random_seed = 42
 
 not_delete_in_heroes = ['_x', '_y', '_level', '_gold', '_towers_killed', '_roshans_killed']
 not_delete_in_other = ['game_time', 'game_mode', 'lobby_type']
+delete_list = ['len', 'type']
+categorize_list = ['hero_id', 'mode', 'type']
 
 def preprocess_train(_data, is_remove_outliers, is_split = True, make_opposite_target = False):
     data = _data.copy()
@@ -22,7 +24,27 @@ def preprocess_train(_data, is_remove_outliers, is_split = True, make_opposite_t
     else:
         return data
 
-def delete_by_list(_data : pd.DataFrame):
+def delete_by_list(_data :pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != "target":
+            finded = False
+            for str in delete_list:
+                if str in cat:
+                    finded = True
+            if  finded:
+                data = data.drop(cat, axis = 1)
+    return data
+
+def categorize(_data : pd.DataFrame):
+    data = _data.copy()
+    for cat in data.columns:
+        if cat != 'target':
+            for str in categorize_list:
+                if str in cat:
+                    data = pd.get_dummies(data, columns=[cat])
+    return data
+def delete_by_not_list(_data : pd.DataFrame):
     data = _data.copy()
     for cat in data.columns:
         if cat != "target":
@@ -44,7 +66,8 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = delete_not_x_y(data)
+    data = (delete_by_list(data))
+    #data = delete_not_x_y(data)
     #data = delete_not_r(data)
     #print('x')
     data = data.dropna()
