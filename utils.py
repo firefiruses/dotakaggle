@@ -44,6 +44,7 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
+    #data = delete_by_list(data)
     #data = delete_not_x_y(data)
     #data = delete_not_r(data)
     #print('x')
@@ -119,6 +120,8 @@ def write(model, read_from = "DOTA2_TEST_features.csv", drop_index = False):
     writeData = preprocess_for_result(writeData)
     resultWriteData = model.predict(writeData)
     resultWriteData = resultWriteData.T[0]
+    trans = np.vectorize(privedi)
+    resultWriteData = trans(resultWriteData)
     print(resultWriteData)
     resultWriteData = pd.DataFrame({"match_id" : ids, "radiant_win" : resultWriteData})
     resultWriteData.to_csv("result.csv", index= False)
@@ -183,3 +186,6 @@ def pred_by_nn(nn,loader, is_many_vals = False):
             predictions = predictions.detach().numpy()
             test_preds = np.append(test_preds, predictions)
     return test_preds
+
+def privedi(x):
+    return 1 if x>=1 else (0 if x<=0 else x)
