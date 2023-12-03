@@ -66,7 +66,7 @@ def preprocess_for_result(_data):
 
 def inner_preprocess(_data : pd.DataFrame):
     data = _data.copy()
-    data = categorize(delete_by_list(data))
+    #data = categorize(delete_by_list(data))
     #data = delete_not_x_y(data)
     #data = delete_not_r(data)
     #print('x')
@@ -140,7 +140,7 @@ def write(model, read_from = "DOTA2_TEST_features.csv", drop_index = False):
     ids = writeData["match_id"]
     writeData = writeData.drop("match_id", axis = 1)
     writeData = preprocess_for_result(writeData)
-    resultWriteData = model.predict(writeData)
+    resultWriteData = model.predict_proba(writeData)[:, 1]
     resultWriteData = pd.DataFrame({"match_id" : ids, "radiant_win" : resultWriteData})
     resultWriteData.to_csv("result.csv", index= False)
 
